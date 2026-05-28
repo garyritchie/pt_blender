@@ -1,0 +1,10 @@
+PROJECT={{ project }}
+PREFIX={{ prefix }}
+COLLABTYPE=Git
+DEPLOYFILES={{ deployfiles }}
+PROJECTTYPE={{ project_type }}
+UPLOAD=stage
+PACKAGEFORMAT=zip
+B3DVERSION={{ b3d_version }}
+KEEP=2
+WIP=RENDER/

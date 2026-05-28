@@ -1,0 +1,92 @@
+## Natron lock and autosave files...
+*.ntp.*
+
+## Linux system-specific. Appeared after deleting a file...
+.fuse_hidden*
+
+## No longer used...
+FRAMESTORE
+
+## Blender volume cache
+*.uni
+
+_OLD
+debug.log
+*cache
+CACHE/
+cache_*/
+*.FCStd1
+BUILD/*
+DIST/*
+RENDER/*
+PARKING_LOT/*
+*.blend[1-9]
+*.blend*[1-9]
+.blender_cloud/
+*-autosave.*
+*~
+.~*
+.vs/
+.autosave/
+.env
+.asciidoctor
+**/blendcache_*
+*.flamenco.blend
+*_[Tt][Ee][Ss][Tt]*
+!*TESTPATTERN*
+*.vdb
+Gemfile.lock
+LAYOUT/*.css
+LAYOUT/*.css.map
+
+## HRP BBO
+DAILIES/**/*.mp4
+## temporary?
+REFERENCE/VEHICLE/
+## from broken ffmpeg process?...
+*.clbin
+## Massive animation cache files...
+ANIMATION
+
+## GLO ORH source video folder and ffmpeg encoding temp files
+VIDEO
+ffmpeg*.log*
+*.clbin
+FONT/*[0-9].ttf
+*.tmp
+cookie*
+tidy_errors.txt
+
+## HRP IMLS: Ignore WIP terrain stuff
+LAYOUT/*.tif
+
+## HRP project specific (Maya)
+**/images/composite*
+**/images/tmp
+.mayaSwatches
+**/renderData
+
+## IBA NEXUS Large files
+
+*.wav
+*.mov
+*.mkv
+AUDIO/*.zip
+## audacity temp files?
+*.aup3-*
+
+## LRL Business Process
+DOC/*
+!DOC/folderdetails.md
+!DOC/filenaming.md
+!DOC/closedown.md
+!**/.gitkeep.md
+makefile
+*.mk
+notes.*
+NOTE/
+!ILLUSTRATION/ICON/
+
+## Ignore `vale sync` stuff
+styles/*
+!styles/config/
