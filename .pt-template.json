@@ -163,7 +163,7 @@
     {
       "name": "project_type",
       "prompt": "Enter project_type (e.g. Blender, Godot, WebXR, etc.):",
-      "default": "Godot",
+      "default": "3D Animation",
       "required": false
     },
     {
