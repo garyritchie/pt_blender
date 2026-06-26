@@ -328,7 +328,7 @@ if not BLENDER_FILE:
                         
         if matching_daily:
             # Pick the most recent entry from daily archive index (usually bottom of list)
-            BLENDER_URL = matching_daily[-1]
+            BLENDER_URL = matching_daily[0]
             BLENDER_FILE = BLENDER_URL.split('/')[-1]
             SOURCE_TYPE = "daily"
             print(f"Found Builder Daily/Beta Release: {BLENDER_FILE}")

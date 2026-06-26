@@ -1,0 +1,10 @@
+.git/
+.gitea/issue_template.md
+.editorconfig
+.gitattributes
+.gitignore
+.vscode/extensions.json
+DOC/closedown.md
+DOC/filenaming.md
+.makerc
+readme.md
