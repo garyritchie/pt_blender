@@ -68,6 +68,29 @@ BUILDDIR = config.get('BUILDDIR', 'BUILD')
 DISTDIR = config.get('DISTDIR', 'DIST')
 
 # --- Helper Functions ---
+def is_dir_unused(directory):
+    """Check if a directory contains only .gitkeep.md and/or .info.md files.
+    
+    A directory is considered "unused" (empty) if it contains only these
+    marker files. Any other files indicate the directory is in use.
+    
+    Args:
+        directory: Path object to the directory to check.
+        
+    Returns:
+        True if directory contains only .gitkeep.md and/or .info.md, False otherwise.
+    """
+    if not directory.is_dir():
+        return False
+    items = list(directory.iterdir())
+    if not items:
+        return True  # Empty directory is unused
+    # Check that all items are .gitkeep.md or .info.md
+    for item in items:
+        if item.name not in ('.gitkeep.md', '.info.md'):
+            return False
+    return True
+
 def get_git_info():
     """Gets current git branch and short commit hash securely."""
     try:
@@ -346,10 +369,13 @@ def reports():
 @task(category="project")
 def simplify():
     """Remove unused folders recursively (customizable target via FOLDER=path).
-
+    
     Cleans unused and non-essential directories from the active workspace layout.
     By default, preserves protected directories (such as scene, model, texture, app, doc).
-
+    
+    A directory is considered "unused" if it contains ONLY .gitkeep.md and/or .info.md files.
+    Any directory with other files is considered "used" and will not be removed.
+    
     Configuration Options:
       FOLDER        Local path of target subdirectory to selectively delete.
                     Example: FOLDER=RENDER/ python tasks.py simplify
@@ -364,13 +390,19 @@ def simplify():
         for path in Path(".").iterdir():
             if path.is_dir() and not path.name.startswith('.'):
                 if path.name.lower() not in protected_folders:
-                    print(f"Removing unused directory: {path}")
-                    shutil.rmtree(path, ignore_errors=True)
+                    if is_dir_unused(path):
+                        print(f"Removing unused directory: {path}")
+                        shutil.rmtree(path, ignore_errors=True)
+                    else:
+                        print(f"Skipping used directory: {path} (contains files)")
     else:
         target_path = Path(target_pattern)
         if target_path.exists() and target_path.is_dir():
-            print(f"Removing targeted directory: {target_path}")
-            shutil.rmtree(target_path, ignore_errors=True)
+            if is_dir_unused(target_path):
+                print(f"Removing unused directory: {target_path}")
+                shutil.rmtree(target_path, ignore_errors=True)
+            else:
+                print(f"Skipping used directory: {target_path} (contains files)")
     print("Project layout simplification complete.")
 
 @task(category="project")
