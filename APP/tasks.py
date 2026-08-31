@@ -3,9 +3,8 @@
 tasks.py - Universal Cross-Platform Task Runner and Project Orchestrator
 Replaces legacy Makefile dependencies with robust, native, dependency-free Python.
 """
-
-import os
 import sys
+import os
 import re
 import shutil
 import platform
@@ -164,7 +163,7 @@ def task(category="options", name=None):
 @task(category="project", name="client-info")
 def client_info():
     """Collect client overrides and makerc configurations into a single file.
-
+    
     Extracts variables and environment blocks from active configurations (.makerc, .env)
     and aggregates them inside local file .client.info to preserve environment overrides.
     """
@@ -179,7 +178,7 @@ def client_info():
             except Exception as e:
                 print(f"Warning: Failed to read {filepath}: {e}")
             lines.append("\n")
-            
+    
     with open(".client.info", "w", encoding="utf-8") as out:
         out.writelines(lines)
     print("Successfully compiled .client.info")
@@ -187,7 +186,7 @@ def client_info():
 @task(category="project")
 def put_clientinfo():
     """Create defaults to use with projects (portability). Splits consolidated details.
-
+    
     Reads variables stored inside local file .client.info and splits the details
     back out to restore override properties inside parent-level configuration profiles
     (.makerc and .env).
@@ -220,7 +219,7 @@ def put_clientinfo():
 @task(category="project")
 def todo():
     """Consolidates ToDo lists from readme.md and readme.adoc files in parent folder.
-
+    
     Recursively scans markdown/asciidoc documentation structures inside sibling/parent project folders
     and compiles a consolidated ledger of pending todo items inside parent directory path: ../todo.md
     """
@@ -249,7 +248,7 @@ def todo():
                         break
             except Exception as e:
                 print(f"Skipping {path}: {e}")
-                
+    
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.writelines(todo_lines)
@@ -260,7 +259,7 @@ def todo():
 @task(category="project")
 def list_closed():
     """List projects that have had closedown activities recorded in closedown.md.
-
+    
     Scans parent directories recursively for completed closedown logs (where items are checked off)
     and aggregates matching paths inside parent directory file: ../closed.md
     """
@@ -274,14 +273,14 @@ def list_closed():
         if is_ignored(path, ignore_patterns):
             continue
         try:
-            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(path, 'r', encoding='utf-8') as f:
                 content = f.read()
             if re.search(r'-\s*\[x\]', content, re.IGNORECASE):
                 rel_path = os.path.relpath(path, start=".")
                 closed_lines.append(f"- [[{rel_path}]]\n")
         except Exception as e:
             print(f"Skipping {path}: {e}")
-            
+    
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.writelines(closed_lines)
@@ -292,7 +291,7 @@ def list_closed():
 @task(category="project")
 def list_notclosed():
     """List projects that have not had closedown activities completed.
-
+    
     Scans parent directories recursively for active closedown.md check-sheets containing unchecked entries
     and compiles tracking links into parent directory path: ../notclosed.md
     """
@@ -306,14 +305,14 @@ def list_notclosed():
         if is_ignored(path, ignore_patterns):
             continue
         try:
-            with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+            with open(path, 'r', encoding='utf-8') as f:
                 content = f.read()
             if re.search(r'-\s*\[\s*\]', content):
                 rel_path = os.path.relpath(path, start=".")
                 not_closed_lines.append(f"- [[{rel_path}]]\n")
         except Exception as e:
             print(f"Skipping {path}: {e}")
-            
+    
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.writelines(not_closed_lines)
@@ -324,7 +323,7 @@ def list_notclosed():
 @task(category="project")
 def list_archived():
     """Lists archived projects by identifying '# archived' flags inside readmes.
-
+    
     Recursively scans parent project directories for documentation files containing an Archived header block
     and compiles a list of matches in path: ../archived.md
     """
@@ -339,14 +338,14 @@ def list_archived():
             continue
         if path.is_file() and path.name.lower() in ("readme.md", "readme.adoc"):
             try:
-                with open(path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(path, 'r', encoding='utf-8') as f:
                     content = f.read()
                 if re.search(r'^(#|=)+\s*archived', content, re.MULTILINE | re.IGNORECASE):
                     rel_path = os.path.relpath(path, start=".")
                     archived_lines.append(f"- [[{rel_path}]]\n")
             except Exception as e:
                 print(f"Skipping {path}: {e}")
-                
+    
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.writelines(archived_lines)
@@ -357,7 +356,7 @@ def list_archived():
 @task(category="project")
 def reports():
     """WIP: Generate collective reports on Todo, Not|Closed, and Archived status.
-
+    
     Runs sequentially: todo, list-closed, list-notclosed, and list-archived to compile
     a complete state report in parent directory files.
     """
@@ -384,31 +383,58 @@ def simplify():
     target_pattern = config.get('FOLDER', '**/')
     print(f"Beginning layout simplification. Sweeping folder pattern: {target_pattern}")
     
-    protected_folders = [w.lower().rstrip('/') for w in WIP] + ['app', 'scene', 'model', 'doc', 'texture', 'build', 'dist']
-    
+    # Determine the scan root
     if target_pattern == "**/":
-        for path in Path(".").iterdir():
-            if path.is_dir() and not path.name.startswith('.'):
-                if path.name.lower() not in protected_folders:
-                    if is_dir_unused(path):
-                        print(f"Removing unused directory: {path}")
-                        shutil.rmtree(path, ignore_errors=True)
-                    else:
-                        print(f"Skipping used directory: {path} (contains files)")
+        scan_root = Path(".")
     else:
-        target_path = Path(target_pattern)
-        if target_path.exists() and target_path.is_dir():
-            if is_dir_unused(target_path):
-                print(f"Removing unused directory: {target_path}")
-                shutil.rmtree(target_path, ignore_errors=True)
-            else:
-                print(f"Skipping used directory: {target_path} (contains files)")
+        scan_root = Path(target_pattern)
+    
+    # Validate scan root
+    if not scan_root.exists():
+        print(f"Error: Directory not found: {scan_root}")
+        return
+    if not scan_root.is_dir():
+        print(f"Error: Not a directory: {scan_root}")
+        return
+    
+    protected_folders = [w.lower().rstrip('/') for w in WIP] + ['app', 'build', 'dist']
+    
+    # Collect directories to delete
+    to_delete = []
+    for item in scan_root.iterdir():
+        if not item.is_dir():
+            continue
+        if item.name.startswith('.'):
+            continue
+        if item.name.lower() in protected_folders:
+            continue
+        if is_dir_unused(item):
+            to_delete.append(item)
+    
+    if not to_delete:
+        print(f"No unused directories found under {scan_root}.")
+        return
+    
+    # Show confirmation
+    print("The following directories will be removed:")
+    for d in to_delete:
+        print(f"  - {d}")
+    answer = input(f"Proceed to delete the above {len(to_delete)} directory/-ies? [y/N] ").strip().lower()
+    if answer not in ('y', 'yes'):
+        print("Aborted by user.")
+        return
+    
+    # Perform deletions
+    for d in to_delete:
+        print(f"Removing unused directory: {d}")
+        shutil.rmtree(d, ignore_errors=True)
+    
     print("Project layout simplification complete.")
 
 @task(category="project")
 def setup():
     """Perform initial configuration setup by running config.sh script.
-
+    
     Verifies the existence of local initialization file config.sh and launches it
     to complete automated configuration routines and baseline checks.
     """
@@ -422,7 +448,7 @@ def setup():
 @task(category="project")
 def doc():
     """Compile documentation details listing and folder mapping indexes.
-
+    
     Generates DOC/folderdetails.md recursively by extracting folder layout details,
     cross-referencing with active gitignore patterns, and appending ignored assets.
     """
@@ -442,11 +468,11 @@ def doc():
                             ignored_lines.append(f"{line}\n")
             except:
                 pass
-                
+    
     ignored_lines.append("```\n\n")
     with open(ignored_out, "w", encoding="utf-8") as f:
         f.writelines(ignored_lines)
-        
+    
     # Aggregate compiled documentation file
     doc_out = Path("DOC/folderdetails.md")
     doc_out.parent.mkdir(parents=True, exist_ok=True)
@@ -460,10 +486,10 @@ def doc():
                     combined_lines.append("\n")
             except:
                 pass
-                
+    
     with open(doc_out, "w", encoding="utf-8") as f:
         f.writelines(combined_lines)
-        
+    
     # Cleanup temporary compile blocks
     if ignored_out.exists():
         os.remove(ignored_out)
@@ -472,7 +498,7 @@ def doc():
 @task(category="project")
 def archive():
     """Archive project for coldstorage (removes git history, respects .gitignore, packages to ZIP).
-
+    
     Compresses the active workspace into a highly-compressed .zip deliverable, keeping
     it clean of temporary runtime caches or ignored assets by strictly adhering to gitignore guidelines.
     Targets folder path: ../ARCHIVE/ with filename formatted using git tracking commit metrics.
@@ -1026,7 +1052,7 @@ def help():
         print()
 
 def main():
-    if len(sys.argv) < 2 or clean_args[0] in ("-h", "--help", "help"):
+    if len(sys.argv) < 2 or not clean_args or clean_args[0] in ("-h", "--help", "help"):
         help()
         sys.exit(0)
         
